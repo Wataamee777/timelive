@@ -10,7 +10,7 @@ function startStream() {
     // RenderのUbuntu標準フォントパスを指定
     const fontPath = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
 
-        for (let i = -11; i <= 12; i++) {
+    for (let i = -11; i <= 12; i++) {
         const offset = i * 3600;
         const label = `UTC${i >= 0 ? '+' + i : i}`;
         const isRight = i > 0;
@@ -18,13 +18,13 @@ function startStream() {
         const x = isRight ? 700 : 100;
         const y = 60 + (row * 55);
 
-        // ラベル側
+        // ラベル側（シンプルにクォートで囲む）
         zones.push(`drawtext=fontfile='${fontPath}':text='${label}':x=${x}:y=${y}:fontsize=30:fontcolor=white`);
         
-        // 時刻側：コロンをエスケープせず、全体を「'」で囲み、内部の「:」をFFmpeg用に「\\:」にする
-        // gmtimeの書式内のコロンはバックスラッシュ4つにすると安定します
-        const timeText = `%{gmtime\\\\:%H\\\\\\:%M\\\\\\:%S\\\\:${offset}}`;
-        zones.push(`drawtext=fontfile='${fontPath}':text='${timeText}':x=${x + 180}:y=${y}:fontsize=35:fontcolor=yellow`);
+        // 時刻側（spawnの配列引数では、バックスラッシュは1つ ':' の前に置くだけでOK）
+        // さらに、全体を ' ' で囲むことでコロンを保護します
+        const timeFormat = `%H\\:%M\\:%S`; 
+        zones.push(`drawtext=fontfile='${fontPath}':text='%{gmtime\\:${timeFormat}\\:${offset}}':x=${x + 180}:y=${y}:fontsize=35:fontcolor=yellow`);
     }
 
     const args = [
