@@ -1,12 +1,12 @@
 const { spawn } = require('child_process');
 const http = require('http');
 
-// 1. 変数名を整理（npmのffmpegは使わないのでrequireも削除）
-const RTMP_URL = process.env.RTMP_URL; 
+// Renderの管理画面「Environment」で STREAM_URL を設定してください
+const RTMP_URL = process.env.RTMP_URL;
 
 function startStream() {
     if (!RTMP_URL) {
-        console.error("Error: STREAM_URL is empty. Check Render's Environment Variables.");
+        console.error("Error: STREAM_URL is not set in Render Environment Variables.");
         return;
     }
 
@@ -20,36 +20,46 @@ function startStream() {
         const y = 60 + (row * 55);
 
         zones.push(`drawtext=text='${label}':x=${x}:y=${y}:fontsize=30:fontcolor=white`);
-        // 2. エスケープを修正 (\\\\\\: にすることで、FFmpeg側へ \\: として伝わる)
-        zones.push(`drawtext=text='%{gmtime\\:%H\\\\\\:%M\\\\\\:%S\\:${offset}}':x=${x + 180}:y=${y}:fontsize=35:fontcolor=yellow`);
+        // Termuxで成功したエスケープ形式を反映
+        zones.push(`drawtext=text='%{gmtime\\:%H\\\\:%M\\\\:%S\\:${offset}}':x=${x + 180}:y=${y}:fontsize=35:fontcolor=yellow`);
     }
 
-    // 3. spawnの左辺を childProcess などに変更して衝突を避ける
-    console.log("Connecting to:", RTMP_URL);
-    const childProcess = spawn('ffmpeg', [
+    // 成功したコマンドのパラメータを全投入
+    const args = [
         '-re',
         '-f', 'lavfi',
         '-i', 'color=c=black:s=1280x720:r=30',
         '-vf', zones.join(','),
         '-c:v', 'libx264',
         '-preset', 'veryfast',
-        '-b:v', '2500k',
+        '-b:v', '3000k',
+        '-maxrate', '3000k',
+        '-bufsize', '6000k',
         '-pix_fmt', 'yuv420p',
+        '-g', '60',
         '-f', 'flv',
         RTMP_URL
-    ]);
+    ];
 
-    childProcess.stderr.on('data', (data) => {
+    console.log("Render上で配信を開始します...");
+    const child = spawn('ffmpeg', args);
+
+    child.stderr.on('data', (data) => {
         const msg = data.toString();
-        if (msg.includes('Error')) console.log(`FFmpeg Error: ${msg}`);
+        // 接続維持のためにログを少し出す
+        if (msg.includes('frame=') && Math.random() < 0.01) { // ログ溢れ防止
+            console.log(msg.trim());
+        }
+        if (msg.includes('Error')) console.log("FFmpeg Error:", msg);
     });
 
-    childProcess.on('close', (code) => {
-        console.log(`FFmpeg closed (code ${code}). Restarting...`);
+    child.on('close', (code) => {
+        console.log(`FFmpeg終了 (code ${code})。5秒後に再起動。`);
         setTimeout(startStream, 5000);
     });
 }
 
 startStream();
 
-http.createServer((req, res) => res.end('Streaming...')).listen(process.env.PORT || 3000);
+// Renderのポート開放
+http.createServer((req, res) => res.end('Streaming Running')).listen(process.env.PORT || 3000);
