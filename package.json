@@ -1,0 +1,11 @@
+{
+  "name": "world-clock-stream",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "ffmpeg": "^0.0.4"
+  }
+}
