@@ -20,7 +20,7 @@ function startStream() {
 
         // fontfileを指定して、エスケープをさらに慎重に行う
         zones.push(`drawtext=fontfile='${fontPath}':text='${label}':x=${x}:y=${y}:fontsize=30:fontcolor=white`);
-        zones.push(`drawtext=fontfile='${fontPath}':text='%{gmtime\\:%H\\\\:%M\\\\:%S\\:${offset}}':x=${x + 180}:y=${y}:fontsize=35:fontcolor=yellow`);
+        zones.push(`drawtext=fontfile=${fontPath}:text=%{gmtime\\:%H\\:%M\\:%S\\:${offset}}:x=${x + 180}:y=${y}:fontsize=35:fontcolor=yellow`);
     }
 
     const args = [
