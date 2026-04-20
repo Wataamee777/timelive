@@ -7,20 +7,21 @@ const RTMP_URL = process.env.STREAM_URL;
 function startStream() {
     // -11から+12までの時差を自動生成
     const zones = [];
-    for (let i = -11; i <= 12; i++) {
+for (let i = -11; i <= 12; i++) {
         const offset = i * 3600;
         const label = `UTC${i >= 0 ? '+' + i : i}`;
         
-        // 画面の左右に分ける計算
         const isRight = i > 0;
         const row = isRight ? i - 1 : i + 11;
         const x = isRight ? 700 : 100;
         const y = 60 + (row * 55);
 
         zones.push(`drawtext=text='${label}':x=${x}:y=${y}:fontsize=30:fontcolor=white`);
-        zones.push(`drawtext=text='%{gmtime\\:%H\\\\\\:%M\\\\\\:%S\\:${offset}}':x=${x + 180}:y=${y}:fontsize=35:fontcolor=yellow`);
+        
+        // ここを修正：コロンを \\\\: でエスケープする
+        zones.push(`drawtext=text='%{gmtime\\:%H\\\\:%M\\\\:%S\\:${offset}}':x=${x + 180}:y=${y}:fontsize=35:fontcolor=yellow`);
     }
-
+    
     // npm経由で入れたffmpegを叩く
     const ffmpeg = spawn('ffmpeg', [
         '-re',
