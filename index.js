@@ -2,7 +2,7 @@ const { spawn } = require('child_process');
 const http = require('http');
 
 // 1. 変数名を整理（npmのffmpegは使わないのでrequireも削除）
-const RTMP_URL = process.env.STREAM_URL; 
+const RTMP_URL = process.env.RTMP_URL; 
 
 function startStream() {
     if (!RTMP_URL) {
