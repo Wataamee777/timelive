@@ -21,10 +21,9 @@ function startStream() {
         // ラベル側（シンプルにクォートで囲む）
         zones.push(`drawtext=fontfile='${fontPath}':text='${label}':x=${x}:y=${y}:fontsize=30:fontcolor=white`);
         
-        // 時刻側（spawnの配列引数では、バックスラッシュは1つ ':' の前に置くだけでOK）
-        // さらに、全体を ' ' で囲むことでコロンを保護します
-        const timeFormat = `%H\\:%M\\:%S`; 
-        zones.push(`drawtext=fontfile='${fontPath}':text='%{gmtime\\:${timeFormat}\\:${offset}}':x=${x + 180}:y=${y}:fontsize=35:fontcolor=yellow`);
+        const timeText = `%H.%M.%S`; 
+        zones.push(`drawtext=fontfile=${fontPath}:text='%{gmtime\\:${timeText}\\:${offset}}':x=${x + 180}:y=${y}:fontsize=35:fontcolor=yellow`);
+
     }
 
     const args = [
